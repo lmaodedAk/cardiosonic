@@ -124,7 +124,7 @@ function PredictionResult({ result }) {
   );
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const API_URL = import.meta.env.VITE_API_URL || 'https://cardiosonic-backend-api.loca.lt';
 
 function App() {
   const [file, setFile] = useState(null);
@@ -133,14 +133,28 @@ function App() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [metrics, setMetrics] = useState(null);
+  const [lossGraph, setLossGraph] = useState(null);
+  const [rocGraph, setRocGraph] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/metrics`)
+    const headers = { 'Bypass-Tunnel-Reminder': 'true' };
+
+    fetch(`${API_URL}/api/metrics`, { headers })
       .then(res => res.json())
       .then(data => {
         if (!data.error) setMetrics(data);
       })
       .catch(err => console.error("Could not check metrics on backend", err));
+
+    fetch(`${API_URL}/api/graphs/loss`, { headers })
+      .then(res => res.blob())
+      .then(blob => setLossGraph(URL.createObjectURL(blob)))
+      .catch(console.error);
+
+    fetch(`${API_URL}/api/graphs/roc`, { headers })
+      .then(res => res.blob())
+      .then(blob => setRocGraph(URL.createObjectURL(blob)))
+      .catch(console.error);
   }, []);
 
   const fileInputRef = useRef(null);
@@ -167,7 +181,10 @@ function App() {
 
     try {
       const response = await axios.post(`${API_URL}/api/analyze`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Bypass-Tunnel-Reminder': 'true'
+        }
       });
       setResults(response.data);
       setTimeout(() => {
@@ -478,21 +495,19 @@ function App() {
             <div className="grid-2 mt-4 mb-8">
               <div className="card">
                 <h4 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Training Loss History</h4>
-                <img
-                  src={`${API_URL}/api/graphs/loss`}
+                {lossGraph && <img
+                  src={lossGraph}
                   alt="Training Loss Graph"
                   style={{ width: '100%', borderRadius: '0.5rem', border: '1px solid var(--card-border)' }}
-                  onError={(e) => e.target.style.display = 'none'}
-                />
+                />}
               </div>
               <div className="card">
                 <h4 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Multi-Class ROC Curve</h4>
-                <img
-                  src={`${API_URL}/api/graphs/roc`}
+                {rocGraph && <img
+                  src={rocGraph}
                   alt="ROC Curve Graph"
                   style={{ width: '100%', borderRadius: '0.5rem', border: '1px solid var(--card-border)' }}
-                  onError={(e) => e.target.style.display = 'none'}
-                />
+                />}
               </div>
             </div>
           </>

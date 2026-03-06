@@ -1,0 +1,42 @@
+{
+  "accuracy": 0.7386,
+  "precision": 0.7314,
+  "recall": 0.7386,
+  "f1_score": 0.7107,
+  "mcc": 0.5255,
+  "auc_roc": 0.8093,
+  "per_class_recall": [
+    0.9412,
+    0.6667,
+    0.3182
+  ],
+  "confusion_matrix": [
+    [
+      48,
+      1,
+      2
+    ],
+    [
+      4,
+      10,
+      1
+    ],
+    [
+      12,
+      3,
+      7
+    ]
+  ],
+  "test_class_counts": [
+    51,
+    15,
+    22
+  ],
+  "n_test_samples": 88,
+  "classes": [
+    "Normal",
+    "Murmur",
+    "Abnormal"
+  ],
+  "optimal_abnormal_threshold": 0.34515032172203064
+}

@@ -173,7 +173,7 @@ def analyze():
 
 @app.route('/api/metrics', methods=['GET'])
 def get_metrics():
-    results_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'evaluation', 'results.json')
+    results_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'results.json')
     if os.path.exists(results_path):
         with open(results_path, 'r') as f:
             import json
@@ -190,7 +190,7 @@ def get_graph(graph_type):
     if graph_type not in valid_graphs:
         return jsonify({'error': 'Invalid graph type requested.'}), 400
         
-    graph_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'evaluation', valid_graphs[graph_type])
+    graph_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', valid_graphs[graph_type])
     if os.path.exists(graph_path):
         return send_file(graph_path, mimetype='image/png')
     else:
