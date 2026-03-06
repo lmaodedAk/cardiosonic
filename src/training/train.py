@@ -1,15 +1,15 @@
 import os
 import torch
 import numpy as np
-from training.data_loader import get_loaders
-from training.models.cnn2d import CNN2D
-from training.loss_functions import WeightedFocalLoss, get_class_weights
+from src.training.data_loader import get_loaders
+from src.training.models.cnn2d import CNN2D
+from src.training.loss_functions import WeightedFocalLoss, get_class_weights
 
 # ── Config ──────────────────────────────────────────────────
 DEVICE      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MAX_EPOCHS  = 150
 PATIENCE    = 20
-SAVE_PATH   = "saved_models/best_model.pt"
+SAVE_PATH   = "models/best_model.pt"
 os.makedirs("saved_models", exist_ok=True)
 
 print(f"\n{'='*60}")

@@ -3,7 +3,7 @@ import csv
 import pickle
 import numpy as np
 import librosa
-from preprocessing.preprocess import preprocess_audio, TARGET_SR
+from src.preprocessing.preprocess import preprocess_audio, TARGET_SR
 
 def extract_features(y, sr=TARGET_SR):
     # Branch A: Log Mel Spectrogram → (128, 47)

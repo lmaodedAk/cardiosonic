@@ -5,7 +5,7 @@ from collections import Counter
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from sklearn.model_selection import GroupShuffleSplit
-from training.dataset import CardioDataset
+from src.training.dataset import CardioDataset
 
 MANIFEST_PATH = "data/manifest.csv"
 CACHE_DIR     = "data/processed"

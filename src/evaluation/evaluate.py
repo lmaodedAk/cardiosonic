@@ -7,8 +7,8 @@ from sklearn.metrics import (
     recall_score, roc_auc_score, matthews_corrcoef,
     confusion_matrix, classification_report, roc_curve
 )
-from training.data_loader import get_loaders
-from training.models.cnn2d import CNN2D
+from src.training.data_loader import get_loaders
+from src.training.models.cnn2d import CNN2D
 
 def calculate_optimal_abnormal_threshold(y_true, y_probs):
     """Calculates Youden Index for Abnormal Class vs Rest"""
@@ -26,7 +26,7 @@ def calculate_optimal_abnormal_threshold(y_true, y_probs):
 
 DEVICE    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 CLASSES   = ["Normal", "Murmur", "Abnormal"]
-SAVE_PATH = "saved_models/best_model.pt"
+SAVE_PATH = "models/best_model.pt"
 
 print(f"\n{'='*60}")
 print(f"  CARDIOSONIC HONEST EVALUATION")
@@ -122,9 +122,9 @@ results["optimal_abnormal_threshold"] = optimal_thresh
 print(f"  Note: Update app.py's ABNORMAL_THRESHOLD to {optimal_thresh:.3f} for safe live inference.")
 
 os.makedirs("evaluation", exist_ok=True)
-with open("evaluation/results.json", "w") as f:
+with open("results/results.json", "w") as f:
     json.dump(results, f, indent=2)
-print(f"\nResults saved → evaluation/results.json")
+print(f"\nResults saved → results/results.json")
 
 # Pass/Fail check
 print(f"\n{'='*60}")
@@ -169,6 +169,6 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('Multi-Class ROC Curve (CNN2D)')
 plt.legend(loc="lower right")
-plt.savefig('evaluation/roc_graph.png', dpi=150)
+plt.savefig('results/roc_graph.png', dpi=150)
 plt.close()
-print("Saved evaluation/roc_graph.png")
+print("Saved results/roc_graph.png")

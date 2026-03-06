@@ -6,9 +6,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_cors import CORS
 
-from training.models.cnn2d import CNN2D
-from preprocessing.preprocess import preprocess_audio
-from preprocessing.features import extract_features
+from src.training.models.cnn2d import CNN2D
+from src.preprocessing.preprocess import preprocess_audio
+from src.preprocessing.features import extract_features
 import io
 import base64
 import matplotlib
@@ -54,7 +54,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 def load_model():
     models = []
     device = DEVICE
-    model_path = 'saved_models/best_model.pt'
+    model_path = 'models/best_model.pt'
     if os.path.exists(model_path):
         model = CNN2D(num_classes=3).to(device)
         model.load_state_dict(torch.load(model_path, map_location=device))
@@ -114,12 +114,7 @@ def analyze():
         if len(cycle_probs) == 0:
             return jsonify({'error': 'Insufficient audio cycle length.'}), 400
             
-        # 3. Use new safe inference
-        # Assuming we just average the logits or probabilities from cycles. 
-        # Here we had cycle_probs which are averaged probabilities.
-        # Let's rebuild the logits_output equivalent or just pass probabilities if safe_inference expects logits.
-        # Wait, safe_inference expects logits. Let's adjust safe_inference to take probs since ensemble averages probs.
-        
+        # 3. Final model aggregation
         final_probs = np.mean(cycle_probs, axis=0) # [Normal, Murmur, Abnormal]
         
         entropy = compute_entropy(final_probs)
