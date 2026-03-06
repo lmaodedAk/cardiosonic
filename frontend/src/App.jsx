@@ -124,15 +124,12 @@ function PredictionResult({ result }) {
   );
 }
 
-// Hardcoding the API URL to guarantee the frontend connects to the localtunnel
-// and ignores any broken environment variables set in the Vercel dashboard.
-const API_URL = 'https://cardiosonic-backend-api.loca.lt';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 // Create consistent axios instance
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Bypass-Tunnel-Reminder': 'true',
     'ngrok-skip-browser-warning': 'true'
   }
 });
