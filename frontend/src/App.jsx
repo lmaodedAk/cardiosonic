@@ -124,6 +124,8 @@ function PredictionResult({ result }) {
   );
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 function App() {
   const [file, setFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -133,7 +135,7 @@ function App() {
   const [metrics, setMetrics] = useState(null);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5001/api/metrics')
+    fetch(`${API_URL}/api/metrics`)
       .then(res => res.json())
       .then(data => {
         if (!data.error) setMetrics(data);
@@ -164,7 +166,7 @@ function App() {
     formData.append('audio', file);
 
     try {
-      const response = await axios.post('http://localhost:5001/api/analyze', formData, {
+      const response = await axios.post(`${API_URL}/api/analyze`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setResults(response.data);
@@ -477,7 +479,7 @@ function App() {
               <div className="card">
                 <h4 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Training Loss History</h4>
                 <img
-                  src="http://localhost:5001/api/graphs/loss"
+                  src={`${API_URL}/api/graphs/loss`}
                   alt="Training Loss Graph"
                   style={{ width: '100%', borderRadius: '0.5rem', border: '1px solid var(--card-border)' }}
                   onError={(e) => e.target.style.display = 'none'}
@@ -486,7 +488,7 @@ function App() {
               <div className="card">
                 <h4 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Multi-Class ROC Curve</h4>
                 <img
-                  src="http://localhost:5001/api/graphs/roc"
+                  src={`${API_URL}/api/graphs/roc`}
                   alt="ROC Curve Graph"
                   style={{ width: '100%', borderRadius: '0.5rem', border: '1px solid var(--card-border)' }}
                   onError={(e) => e.target.style.display = 'none'}
