@@ -48,7 +48,10 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 app = Flask(__name__)
 # Enable CORS for the frontend to hit the API locally
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": [
+    "https://frontend-eight-phi-68.vercel.app",
+    "http://localhost:5173"
+]}})
 
 # Load Model globally upon server start
 def load_model():
