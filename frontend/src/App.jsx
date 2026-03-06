@@ -126,6 +126,15 @@ function PredictionResult({ result }) {
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://cardiosonic-backend-api.loca.lt';
 
+// Create consistent axios instance
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Bypass-Tunnel-Reminder': 'true',
+    'ngrok-skip-browser-warning': 'true'
+  }
+});
+
 function App() {
   const [file, setFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -137,23 +146,18 @@ function App() {
   const [rocGraph, setRocGraph] = useState(null);
 
   useEffect(() => {
-    const headers = { 'Bypass-Tunnel-Reminder': 'true' };
-
-    fetch(`${API_URL}/api/metrics`, { headers })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.error) setMetrics(data);
+    api.get(`/api/metrics`)
+      .then(res => {
+        if (!res.data.error) setMetrics(res.data);
       })
       .catch(err => console.error("Could not check metrics on backend", err));
 
-    fetch(`${API_URL}/api/graphs/loss`, { headers })
-      .then(res => res.blob())
-      .then(blob => setLossGraph(URL.createObjectURL(blob)))
+    api.get(`/api/graphs/loss`, { responseType: 'blob' })
+      .then(res => setLossGraph(URL.createObjectURL(res.data)))
       .catch(console.error);
 
-    fetch(`${API_URL}/api/graphs/roc`, { headers })
-      .then(res => res.blob())
-      .then(blob => setRocGraph(URL.createObjectURL(blob)))
+    api.get(`/api/graphs/roc`, { responseType: 'blob' })
+      .then(res => setRocGraph(URL.createObjectURL(res.data)))
       .catch(console.error);
   }, []);
 
@@ -180,10 +184,9 @@ function App() {
     formData.append('audio', file);
 
     try {
-      const response = await axios.post(`${API_URL}/api/analyze`, formData, {
-        headers: { 
+      const response = await api.post(`/api/analyze`, formData, {
+        headers: {
           'Content-Type': 'multipart/form-data',
-          'Bypass-Tunnel-Reminder': 'true'
         }
       });
       setResults(response.data);
