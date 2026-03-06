@@ -124,7 +124,9 @@ function PredictionResult({ result }) {
   );
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cardiosonic-backend-api.loca.lt';
+// Hardcoding the API URL to guarantee the frontend connects to the localtunnel
+// and ignores any broken environment variables set in the Vercel dashboard.
+const API_URL = 'https://cardiosonic-backend-api.loca.lt';
 
 // Create consistent axios instance
 const api = axios.create({
