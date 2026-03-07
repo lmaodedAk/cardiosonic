@@ -138,7 +138,12 @@ function App() {
     fetch(`${API_URL}/api/metrics`)
       .then(res => res.json())
       .then(data => {
-        if (!data.error) setMetrics(data);
+        if (!data.error) {
+          setMetrics(data || {});
+        } else {
+          console.warn("Metrics endpoint returned an error, falling back to empty metrics.", data.error);
+          setMetrics({});
+        }
       })
       .catch(err => console.error("Could not check metrics on backend", err));
   }, []);
@@ -418,32 +423,32 @@ function App() {
           <>
             <div className="grid-3 mb-8 mt-4">
               <div className="metric-card">
-                <h3>{(metrics.accuracy * 100).toFixed(1)}%</h3>
+                <h3>{((metrics.accuracy || 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Accuracy</div>
                 <div className="metric-desc">Overall classification accuracy</div>
               </div>
               <div className="metric-card">
-                <h3>{((metrics.precision || metrics.precision_macro) * 100).toFixed(1)}%</h3>
+                <h3>{(((metrics.precision || metrics.precision_macro) || 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted Precision</div>
                 <div className="metric-desc">Positive predictive value</div>
               </div>
               <div className="metric-card">
-                <h3>{((metrics.recall || metrics.recall_macro) * 100).toFixed(1)}%</h3>
+                <h3>{(((metrics.recall || metrics.recall_macro) || 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted Recall</div>
                 <div className="metric-desc">Sensitivity / True positive rate</div>
               </div>
               <div className="metric-card">
-                <h3>{((metrics.f1_score || metrics.weighted_f1) * 100).toFixed(1)}%</h3>
+                <h3>{(((metrics.f1_score || metrics.weighted_f1) || 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted F1</div>
                 <div className="metric-desc">Harmonic mean of precision & recall</div>
               </div>
               <div className="metric-card">
-                <h3>{(metrics.auc_roc || metrics.auc).toFixed(3)}</h3>
+                <h3>{(metrics.auc_roc || metrics.auc || 0).toFixed(3)}</h3>
                 <div className="metric-name">AUC-ROC</div>
                 <div className="metric-desc">Area under ROC curve</div>
               </div>
               <div className="metric-card">
-                <h3>{metrics.mcc.toFixed(3)}</h3>
+                <h3>{(metrics.mcc || 0).toFixed(3)}</h3>
                 <div className="metric-name">MCC</div>
                 <div className="metric-desc">Matthews Correlation Coefficient</div>
               </div>
@@ -458,19 +463,19 @@ function App() {
                 <div className="cm-header">Pred: <span style={{ opacity: 0.7 }}>Abnormal</span></div>
 
                 <div className="cm-label">Actual: <span style={{ opacity: 0.7, marginLeft: '0.25rem' }}>Normal</span></div>
-                <div className="cm-cell">{metrics.confusion_matrix[0][0]}</div>
-                <div className="cm-cell" style={{ background: '#fef3c7', color: 'var(--warning)' }}>{metrics.confusion_matrix[0][1]}</div>
-                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix[0][2]}</div>
+                <div className="cm-cell">{metrics.confusion_matrix?.[0]?.[0] || 0}</div>
+                <div className="cm-cell" style={{ background: '#fef3c7', color: 'var(--warning)' }}>{metrics.confusion_matrix?.[0]?.[1] || 0}</div>
+                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix?.[0]?.[2] || 0}</div>
 
                 <div className="cm-label">Actual: <span style={{ opacity: 0.7, marginLeft: '0.25rem' }}>Murmur</span></div>
-                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix[1][0]}</div>
-                <div className="cm-cell">{metrics.confusion_matrix[1][1]}</div>
-                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix[1][2]}</div>
+                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix?.[1]?.[0] || 0}</div>
+                <div className="cm-cell">{metrics.confusion_matrix?.[1]?.[1] || 0}</div>
+                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix?.[1]?.[2] || 0}</div>
 
                 <div className="cm-label">Actual: <span style={{ opacity: 0.7, marginLeft: '0.25rem' }}>Abnormal</span></div>
-                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix[2][0]}</div>
-                <div className="cm-cell" style={{ background: '#fef3c7', color: 'var(--warning)' }}>{metrics.confusion_matrix[2][1]}</div>
-                <div className="cm-cell" style={{ background: '#fef2f2', color: 'var(--danger)' }}>{metrics.confusion_matrix[2][2]}</div>
+                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix?.[2]?.[0] || 0}</div>
+                <div className="cm-cell" style={{ background: '#fef3c7', color: 'var(--warning)' }}>{metrics.confusion_matrix?.[2]?.[1] || 0}</div>
+                <div className="cm-cell" style={{ background: '#fef2f2', color: 'var(--danger)' }}>{metrics.confusion_matrix?.[2]?.[2] || 0}</div>
               </div>
             </div>
 
