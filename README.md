@@ -1,4 +1,5 @@
 # CardioSonic
+Author: lmaodedAk
 
 A CNN-based cardiac audio classification system that detects heart 
 abnormalities from PCG (phonocardiogram) recordings using deep learning.
