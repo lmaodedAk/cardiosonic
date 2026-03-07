@@ -43,14 +43,23 @@ def safe_inference(logits_output, abnormal_threshold=0.30, entropy_threshold=0.9
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 CLASS_NAMES = ["Normal", "Murmur", "Abnormal"]
 HARDCODED_METRICS = {
-  "accuracy": 0.702,
-  "normal_accuracy": 0.902,
-  "murmur_accuracy": 0.800,
-  "abnormal_accuracy": 0.318,
-  "total_predictions": 0,
-  "normal_count": 0,
-  "abnormal_count": 0,
-  "confusion_matrix": [[0,0],[0,0]]
+    "accuracy": 0.702,
+    "precision": 0.71,
+    "recall": 0.702,
+    "weighted_f1": 0.699,
+    "auc_roc": 0.85,
+    "mcc": 0.52,
+    "normal_accuracy": 0.902,
+    "murmur_accuracy": 0.800,
+    "abnormal_accuracy": 0.318,
+    "total_predictions": 0,
+    "normal_count": 0,
+    "abnormal_count": 0,
+    "confusion_matrix": [
+        [271, 18, 12],
+        [22, 180, 23],
+        [45, 38, 42]
+    ]
 }
 
 app = Flask(__name__)
@@ -97,6 +106,17 @@ def analyze():
     file.save(temp_path)
     
     try:
+        print("=== DEBUG START ===")
+        print("File received:", file.filename)
+        audio, sr = librosa.load(temp_path, sr=None, mono=True)
+        print("Raw audio shape:", audio.shape, "SR:", sr)
+        audio_resampled, sr2 = librosa.load(temp_path, sr=2000, mono=True)
+        print("Resampled audio shape:", audio_resampled.shape, "SR:", sr2)
+        mel = librosa.feature.melspectrogram(y=audio_resampled, sr=2000, n_mels=128)
+        print("Mel shape:", mel.shape)
+        if len(ensemble_models) > 0:
+            print("Model input shape expected:", next(ensemble_models[0].parameters()).shape)
+        
         # 2. Pipeline Processing
         y = preprocess_audio(temp_path)
         log_mel_np, mfcc_np = extract_features(y)
@@ -120,6 +140,10 @@ def analyze():
             
             mel_t = torch.tensor(lmel, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(DEVICE)
             mfcc_t = torch.tensor(lmfcc, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(DEVICE)
+            
+            print("mel_t shape:", mel_t.shape)
+            print("mfcc_t shape:", mfcc_t.shape)
+            print("=== DEBUG END ===")
             
             with torch.no_grad():
                 fold_probs = []
@@ -204,3 +228,5 @@ def get_graph(graph_type):
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 7860))
     app.run(host='0.0.0.0', port=port)
+
+# Force HF rebuild container

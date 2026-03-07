@@ -543,27 +543,27 @@ function App() {
             <div className="mt-4">
               <div className="dataset-stat">
                 <span className="label">Total Samples</span>
-                <span className="value">3,240</span>
+                <span className="value">585</span>
               </div>
               <div className="dataset-stat">
                 <span className="label">Training Set</span>
-                <span className="value">2,592 (80%)</span>
+                <span className="value">468 (80%)</span>
               </div>
               <div className="dataset-stat">
                 <span className="label">Validation Set</span>
-                <span className="value">324 (10%)</span>
+                <span className="value">58 (10%)</span>
               </div>
               <div className="dataset-stat">
                 <span className="label">Test Set</span>
-                <span className="value">324 (10%)</span>
+                <span className="value">59 (10%)</span>
               </div>
               <div className="dataset-stat">
-                <span className="label">Normal Samples</span>
-                <span className="value">1,585 (48.9%)</span>
+                <span className="label">Target Classes</span>
+                <span className="value">Normal, Murmur, Abnormal</span>
               </div>
               <div className="dataset-stat" style={{ borderBottom: 'none' }}>
-                <span className="label">Abnormal Samples</span>
-                <span className="value">1,655 (51.1%)</span>
+                <span className="label">Model Folds</span>
+                <span className="value">5-Fold Ensemble</span>
               </div>
             </div>
           </div>
@@ -585,10 +585,10 @@ function App() {
                 <Activity size={18} className="text-teal" /> Data Preprocessing
               </h4>
               <ul style={{ paddingLeft: '1.5rem', fontSize: '0.9rem', color: 'var(--slate)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <li>Resampling to 2,000 Hz for computational efficiency</li>
-                <li>Bandpass filtering (25–900 Hz) to isolate cardiac frequency bands</li>
-                <li>Segmentation into fixed-length windows of 5 seconds with 50% overlap</li>
-                <li>Z-score normalization per segment</li>
+                <li>Resampling to 2,000 Hz for targeted frequency analysis</li>
+                <li>Butterworth bandpass filtering (20–400 Hz) to isolate cardiac activity</li>
+                <li>Static 3-second cycle window slicing (non-overlapping)</li>
+                <li>Silence trimming and peak amplitude normalization</li>
               </ul>
             </div>
           </div>
