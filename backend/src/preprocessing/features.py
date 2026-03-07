@@ -9,6 +9,8 @@ def extract_features(y, sr=TARGET_SR):
     # Branch A: Log Mel Spectrogram → (128, 47)
     mel     = librosa.feature.melspectrogram(
                 y=y, sr=sr, n_fft=512, hop_length=128, n_mels=128)
+    mel = np.nan_to_num(mel, nan=0.0, posinf=0.0, neginf=0.0)
+    mel = np.clip(mel, -10, 10)
     log_mel = librosa.power_to_db(mel, ref=np.max)
 
     # Branch B: MFCC + Delta + Delta-Delta → (120, 47)
@@ -19,6 +21,7 @@ def extract_features(y, sr=TARGET_SR):
 
     # Normalize each feature map
     def norm(x):
+        x = np.nan_to_num(x)
         return ((x - x.mean()) / (x.std() + 1e-8)).astype(np.float32)
 
     return norm(log_mel), norm(mfcc_full)

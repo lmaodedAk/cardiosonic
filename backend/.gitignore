@@ -1,0 +1,10 @@
+models/*.pt
+*.png
+archive/
+venv/
+venv_local/
+*.wav
+*.pth
+*.pptx
+data/
+notebooks/
