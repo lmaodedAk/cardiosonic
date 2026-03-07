@@ -364,9 +364,9 @@ function App() {
                 <p style={{ fontSize: '0.875rem', color: 'var(--slate)', marginBottom: '1rem' }}>
                   The model analyzes the audio by converting it into a visual representation of acoustic frequencies over time.
                 </p>
-                {results.graph && (
+                {results.spectrogram && (
                   <img
-                    src={`data:image/png;base64,${results.graph}`}
+                    src={`data:image/png;base64,${results.spectrogram}`}
                     alt="Log-Mel Spectrogram"
                     style={{ width: '100%', borderRadius: '0.5rem', border: '1px solid var(--card-border)' }}
                   />
