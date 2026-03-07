@@ -6,16 +6,19 @@ import './index.css';
 function PredictionResult({ result }) {
   if (!result) return null;
 
-  const isUncertain = result.predicted_class === "Uncertain";
+  const predictedClass = result?.predicted_class ?? 'Unknown';
+  const confidence = result?.confidence ?? 0;
+  const isUncertain = predictedClass === "Uncertain";
 
   const colors = {
     Normal: { bg: "#EAFAF1", border: "#27AE60", text: "#1E8449" },
     Murmur: { bg: "#FEF9E7", border: "#F39C12", text: "#D68910" },
     Abnormal: { bg: "#FDEDEC", border: "#E74C3C", text: "#C0392B" },
-    Uncertain: { bg: "#F2F3F4", border: "#7F8C8D", text: "#626567" }
+    Uncertain: { bg: "#F2F3F4", border: "#7F8C8D", text: "#626567" },
+    Unknown: { bg: "#F2F3F4", border: "#7F8C8D", text: "#626567" }
   };
 
-  const color = colors[result.predicted_class] || colors.Uncertain;
+  const color = colors[predictedClass] || colors.Unknown;
 
   return (
     <div style={{
@@ -31,7 +34,7 @@ function PredictionResult({ result }) {
         fontSize: "2rem", fontWeight: "bold",
         color: color.text, textAlign: "center"
       }}>
-        {isUncertain ? "⚠️ Uncertain" : `${result.predicted_class}`}
+        {isUncertain ? "⚠️ Uncertain" : predictedClass}
       </div>
 
       {/* Confidence */}
@@ -39,8 +42,8 @@ function PredictionResult({ result }) {
         textAlign: "center", marginTop: "8px",
         color: "#666", fontSize: "14px"
       }}>
-        Confidence: {((result?.confidence ?? 0) * 100).toFixed(1)}%
-        {(result?.confidence ?? 0) < 0.60 && (
+        Confidence: {((confidence ?? 0) * 100).toFixed(1)}%
+        {(confidence ?? 0) < 0.60 && (
           <span style={{ color: "#E74C3C", marginLeft: "8px" }}>
             (Too low for reliable prediction)
           </span>
@@ -49,7 +52,7 @@ function PredictionResult({ result }) {
 
       {/* Probability bars */}
       <div style={{ marginTop: "16px" }}>
-        {Object.entries(result?.probabilities || {}).map(([cls, prob]) => (
+        {Object.entries(result?.probabilities ?? {}).map(([cls, prob]) => (
           <div key={cls} style={{
             display: "flex", alignItems: "center",
             gap: "10px", margin: "6px 0"
@@ -135,17 +138,16 @@ function App() {
   const [metrics, setMetrics] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/metrics`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data.error) {
-          setMetrics(data || {});
-        } else {
-          console.warn("Metrics endpoint returned an error, falling back to empty metrics.", data.error);
-          setMetrics({});
-        }
-      })
-      .catch(err => console.error("Could not check metrics on backend", err));
+    const fetchMetrics = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/metrics`);
+        setMetrics(res.data ?? {});
+      } catch (err) {
+        console.error("Could not check metrics on backend", err);
+        setMetrics({});
+      }
+    };
+    fetchMetrics();
   }, []);
 
   const fileInputRef = useRef(null);
@@ -174,17 +176,36 @@ function App() {
       const response = await axios.post(`${API_URL}/api/analyze`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setResults(response.data);
+      setResults(response.data ?? {});
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     } catch (err) {
       console.error(err);
+      setResults(null);
       setError(err.response?.data?.error || "Failed to analyze audio. Ensure the backend server is running.");
     } finally {
       setIsAnalyzing(false);
     }
   };
+
+  if (metrics === null) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Loader2 size={48} style={{ animation: 'spin 2s linear infinite', color: 'var(--teal)' }} />
+          <h2 style={{ marginTop: '1rem', color: 'var(--navy)' }}>Loading Data...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  const accuracy = metrics?.accuracy ?? 0;
+  const precision = (metrics?.precision ?? metrics?.precision_macro) ?? 0;
+  const recall = (metrics?.recall ?? metrics?.recall_macro) ?? 0;
+  const f1Score = (metrics?.f1_score ?? metrics?.weighted_f1) ?? 0;
+  const aucRoc = (metrics?.auc_roc ?? metrics?.auc) ?? 0;
+  const mcc = metrics?.mcc ?? 0;
 
   return (
     <div className="App">
@@ -423,32 +444,32 @@ function App() {
           <>
             <div className="grid-3 mb-8 mt-4">
               <div className="metric-card">
-                <h3>{((metrics?.accuracy ?? 0) * 100).toFixed(1)}%</h3>
+                <h3>{((accuracy ?? 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Accuracy</div>
                 <div className="metric-desc">Overall classification accuracy</div>
               </div>
               <div className="metric-card">
-                <h3>{(((metrics?.precision ?? metrics?.precision_macro) ?? 0) * 100).toFixed(1)}%</h3>
+                <h3>{((precision ?? 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted Precision</div>
                 <div className="metric-desc">Positive predictive value</div>
               </div>
               <div className="metric-card">
-                <h3>{(((metrics?.recall ?? metrics?.recall_macro) ?? 0) * 100).toFixed(1)}%</h3>
+                <h3>{((recall ?? 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted Recall</div>
                 <div className="metric-desc">Sensitivity / True positive rate</div>
               </div>
               <div className="metric-card">
-                <h3>{(((metrics?.f1_score ?? metrics?.weighted_f1) ?? 0) * 100).toFixed(1)}%</h3>
+                <h3>{((f1Score ?? 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted F1</div>
                 <div className="metric-desc">Harmonic mean of precision & recall</div>
               </div>
               <div className="metric-card">
-                <h3>{((metrics?.auc_roc ?? metrics?.auc) ?? 0).toFixed(3)}</h3>
+                <h3>{(aucRoc ?? 0).toFixed(3)}</h3>
                 <div className="metric-name">AUC-ROC</div>
                 <div className="metric-desc">Area under ROC curve</div>
               </div>
               <div className="metric-card">
-                <h3>{(metrics?.mcc ?? 0).toFixed(3)}</h3>
+                <h3>{(mcc ?? 0).toFixed(3)}</h3>
                 <div className="metric-name">MCC</div>
                 <div className="metric-desc">Matthews Correlation Coefficient</div>
               </div>
@@ -463,19 +484,19 @@ function App() {
                 <div className="cm-header">Pred: <span style={{ opacity: 0.7 }}>Abnormal</span></div>
 
                 <div className="cm-label">Actual: <span style={{ opacity: 0.7, marginLeft: '0.25rem' }}>Normal</span></div>
-                <div className="cm-cell">{metrics.confusion_matrix?.[0]?.[0] || 0}</div>
-                <div className="cm-cell" style={{ background: '#fef3c7', color: 'var(--warning)' }}>{metrics.confusion_matrix?.[0]?.[1] || 0}</div>
-                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix?.[0]?.[2] || 0}</div>
+                <div className="cm-cell">{metrics?.confusion_matrix?.[0]?.[0] ?? 0}</div>
+                <div className="cm-cell" style={{ background: '#fef3c7', color: 'var(--warning)' }}>{metrics?.confusion_matrix?.[0]?.[1] ?? 0}</div>
+                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics?.confusion_matrix?.[0]?.[2] ?? 0}</div>
 
                 <div className="cm-label">Actual: <span style={{ opacity: 0.7, marginLeft: '0.25rem' }}>Murmur</span></div>
-                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix?.[1]?.[0] || 0}</div>
-                <div className="cm-cell">{metrics.confusion_matrix?.[1]?.[1] || 0}</div>
-                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix?.[1]?.[2] || 0}</div>
+                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics?.confusion_matrix?.[1]?.[0] ?? 0}</div>
+                <div className="cm-cell">{metrics?.confusion_matrix?.[1]?.[1] ?? 0}</div>
+                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics?.confusion_matrix?.[1]?.[2] ?? 0}</div>
 
                 <div className="cm-label">Actual: <span style={{ opacity: 0.7, marginLeft: '0.25rem' }}>Abnormal</span></div>
-                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics.confusion_matrix?.[2]?.[0] || 0}</div>
-                <div className="cm-cell" style={{ background: '#fef3c7', color: 'var(--warning)' }}>{metrics.confusion_matrix?.[2]?.[1] || 0}</div>
-                <div className="cm-cell" style={{ background: '#fef2f2', color: 'var(--danger)' }}>{metrics.confusion_matrix?.[2]?.[2] || 0}</div>
+                <div className="cm-cell" style={{ background: '#f8fafc', color: 'var(--slate)' }}>{metrics?.confusion_matrix?.[2]?.[0] ?? 0}</div>
+                <div className="cm-cell" style={{ background: '#fef3c7', color: 'var(--warning)' }}>{metrics?.confusion_matrix?.[2]?.[1] ?? 0}</div>
+                <div className="cm-cell" style={{ background: '#fef2f2', color: 'var(--danger)' }}>{metrics?.confusion_matrix?.[2]?.[2] ?? 0}</div>
               </div>
             </div>
 
