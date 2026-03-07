@@ -39,8 +39,8 @@ function PredictionResult({ result }) {
         textAlign: "center", marginTop: "8px",
         color: "#666", fontSize: "14px"
       }}>
-        Confidence: {(result.confidence * 100).toFixed(1)}%
-        {result.confidence < 0.60 && (
+        Confidence: {((result?.confidence ?? 0) * 100).toFixed(1)}%
+        {(result?.confidence ?? 0) < 0.60 && (
           <span style={{ color: "#E74C3C", marginLeft: "8px" }}>
             (Too low for reliable prediction)
           </span>
@@ -49,7 +49,7 @@ function PredictionResult({ result }) {
 
       {/* Probability bars */}
       <div style={{ marginTop: "16px" }}>
-        {Object.entries(result.probabilities).map(([cls, prob]) => (
+        {Object.entries(result?.probabilities || {}).map(([cls, prob]) => (
           <div key={cls} style={{
             display: "flex", alignItems: "center",
             gap: "10px", margin: "6px 0"
@@ -63,7 +63,7 @@ function PredictionResult({ result }) {
               borderRadius: "4px", height: "18px"
             }}>
               <div style={{
-                width: `${(prob * 100).toFixed(1)}%`,
+                width: `${((prob ?? 0) * 100).toFixed(1)}%`,
                 height: "100%",
                 borderRadius: "4px",
                 backgroundColor: cls === "Normal" ? "#27AE60" :
@@ -76,7 +76,7 @@ function PredictionResult({ result }) {
               width: "45px", fontSize: "13px",
               textAlign: "right"
             }}>
-              {(prob * 100).toFixed(1)}%
+              {((prob ?? 0) * 100).toFixed(1)}%
             </span>
           </div>
         ))}
@@ -423,32 +423,32 @@ function App() {
           <>
             <div className="grid-3 mb-8 mt-4">
               <div className="metric-card">
-                <h3>{((metrics.accuracy || 0) * 100).toFixed(1)}%</h3>
+                <h3>{((metrics?.accuracy ?? 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Accuracy</div>
                 <div className="metric-desc">Overall classification accuracy</div>
               </div>
               <div className="metric-card">
-                <h3>{(((metrics.precision || metrics.precision_macro) || 0) * 100).toFixed(1)}%</h3>
+                <h3>{(((metrics?.precision ?? metrics?.precision_macro) ?? 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted Precision</div>
                 <div className="metric-desc">Positive predictive value</div>
               </div>
               <div className="metric-card">
-                <h3>{(((metrics.recall || metrics.recall_macro) || 0) * 100).toFixed(1)}%</h3>
+                <h3>{(((metrics?.recall ?? metrics?.recall_macro) ?? 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted Recall</div>
                 <div className="metric-desc">Sensitivity / True positive rate</div>
               </div>
               <div className="metric-card">
-                <h3>{(((metrics.f1_score || metrics.weighted_f1) || 0) * 100).toFixed(1)}%</h3>
+                <h3>{(((metrics?.f1_score ?? metrics?.weighted_f1) ?? 0) * 100).toFixed(1)}%</h3>
                 <div className="metric-name">Weighted F1</div>
                 <div className="metric-desc">Harmonic mean of precision & recall</div>
               </div>
               <div className="metric-card">
-                <h3>{(metrics.auc_roc || metrics.auc || 0).toFixed(3)}</h3>
+                <h3>{((metrics?.auc_roc ?? metrics?.auc) ?? 0).toFixed(3)}</h3>
                 <div className="metric-name">AUC-ROC</div>
                 <div className="metric-desc">Area under ROC curve</div>
               </div>
               <div className="metric-card">
-                <h3>{(metrics.mcc || 0).toFixed(3)}</h3>
+                <h3>{(metrics?.mcc ?? 0).toFixed(3)}</h3>
                 <div className="metric-name">MCC</div>
                 <div className="metric-desc">Matthews Correlation Coefficient</div>
               </div>
