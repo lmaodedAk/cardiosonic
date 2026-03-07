@@ -126,14 +126,6 @@ function PredictionResult({ result }) {
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
-// Create consistent axios instance
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'ngrok-skip-browser-warning': 'true'
-  }
-});
-
 function App() {
   const [file, setFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -141,23 +133,14 @@ function App() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [metrics, setMetrics] = useState(null);
-  const [lossGraph, setLossGraph] = useState(null);
-  const [rocGraph, setRocGraph] = useState(null);
 
   useEffect(() => {
-    api.get(`/api/metrics`)
-      .then(res => {
-        if (!res.data.error) setMetrics(res.data);
+    fetch(`${API_URL}/api/metrics`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) setMetrics(data);
       })
       .catch(err => console.error("Could not check metrics on backend", err));
-
-    api.get(`/api/graphs/loss`, { responseType: 'blob' })
-      .then(res => setLossGraph(URL.createObjectURL(res.data)))
-      .catch(console.error);
-
-    api.get(`/api/graphs/roc`, { responseType: 'blob' })
-      .then(res => setRocGraph(URL.createObjectURL(res.data)))
-      .catch(console.error);
   }, []);
 
   const fileInputRef = useRef(null);
@@ -183,10 +166,8 @@ function App() {
     formData.append('audio', file);
 
     try {
-      const response = await api.post(`/api/analyze`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
+      const response = await axios.post(`${API_URL}/api/analyze`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setResults(response.data);
       setTimeout(() => {
@@ -497,19 +478,21 @@ function App() {
             <div className="grid-2 mt-4 mb-8">
               <div className="card">
                 <h4 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Training Loss History</h4>
-                {lossGraph && <img
-                  src={lossGraph}
+                <img
+                  src={`${API_URL}/api/graphs/loss`}
                   alt="Training Loss Graph"
                   style={{ width: '100%', borderRadius: '0.5rem', border: '1px solid var(--card-border)' }}
-                />}
+                  onError={(e) => e.target.style.display = 'none'}
+                />
               </div>
               <div className="card">
                 <h4 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Multi-Class ROC Curve</h4>
-                {rocGraph && <img
-                  src={rocGraph}
+                <img
+                  src={`${API_URL}/api/graphs/roc`}
                   alt="ROC Curve Graph"
                   style={{ width: '100%', borderRadius: '0.5rem', border: '1px solid var(--card-border)' }}
-                />}
+                  onError={(e) => e.target.style.display = 'none'}
+                />
               </div>
             </div>
           </>

@@ -4,7 +4,6 @@ import numpy as np
 import librosa
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_cors import CORS
 
 from src.training.models.cnn2d import CNN2D
 from src.preprocessing.preprocess import preprocess_audio
@@ -40,18 +39,12 @@ def safe_inference(logits_output, abnormal_threshold=0.30, entropy_threshold=0.9
         return "Murmur", probs, "Warning: Heart Murmur profile identified. Recommend cardiology consultation.", "murmur_detection"
     else:
         return "Normal", probs, "Heart sounds appear normal. Regular checkup recommended.", None
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import librosa.display
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 app = Flask(__name__)
 # Enable CORS for the frontend to hit the API locally
-CORS(app, resources={r"/api/*": {"origins": [
-    "https://frontend-eight-phi-68.vercel.app",
-    "http://localhost:5173"
-]}})
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Load Model globally upon server start
 def load_model():
@@ -176,7 +169,7 @@ def analyze():
 
 @app.route('/api/metrics', methods=['GET'])
 def get_metrics():
-    results_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'results.json')
+    results_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'evaluation', 'results.json')
     if os.path.exists(results_path):
         with open(results_path, 'r') as f:
             import json
@@ -193,7 +186,7 @@ def get_graph(graph_type):
     if graph_type not in valid_graphs:
         return jsonify({'error': 'Invalid graph type requested.'}), 400
         
-    graph_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', valid_graphs[graph_type])
+    graph_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'evaluation', valid_graphs[graph_type])
     if os.path.exists(graph_path):
         return send_file(graph_path, mimetype='image/png')
     else:

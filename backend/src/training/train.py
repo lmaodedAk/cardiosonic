@@ -116,25 +116,3 @@ print(f"  Best val_loss: {best_val_loss:.4f}")
 print(f"  Model saved:   {SAVE_PATH}")
 print(f"  Total epochs:  {epoch}")
 print(f"\nNow run: python evaluation/evaluate.py")
-
-# Generate loss graph
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
-os.makedirs('results', exist_ok=True)
-epochs_list = [h["epoch"] for h in history]
-train_losses = [h["train_loss"] for h in history]
-val_losses = [h["val_loss"] for h in history]
-
-plt.figure(figsize=(8, 6))
-plt.plot(epochs_list, train_losses, label='Train Loss', color='#2980B9')
-plt.plot(epochs_list, val_losses, label='Validation Loss', color='#E74C3C')
-plt.title('Training & Validation Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
-plt.tight_layout()
-plt.savefig('results/loss_graph.png', dpi=150)
-plt.close()
-print("Saved results/loss_graph.png")
